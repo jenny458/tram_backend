@@ -6,7 +6,10 @@ module.exports = mongoose => {
         random_promotion_of_the_day: {type:mongoose.Schema.Types.ObjectId, ref:'promotion'},
         promotions:[
           {type:mongoose.Schema.Types.ObjectId, ref:'promotion'}
-        ]
+        ],
+        bonus: Number,
+        bonus_start_time: Date,
+        bonus_end_time: Date
       },
       { timestamps: true }
     );

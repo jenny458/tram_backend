@@ -562,7 +562,7 @@ exports.quizCheckAnswer = (req, res) => {
           }else{
             const userChoice = req.body.userChoice;
             if(quiz.answer == userChoice){
-              user.point = user.point+1;
+              user.point = user.point+quiz.point;
               console.log("user answer is correct! add 1 point");
             }else{
               user.life = user.life-1;
@@ -579,7 +579,7 @@ exports.quizCheckAnswer = (req, res) => {
               } else {
                 let message = `quizCheckAnswer user ${userId} updated successfully`;
                 logger.info(message);
-                res.send(data);
+                res.send({result: quiz.answer == userChoice, user:data});
               }
             })
             .catch(err => {
