@@ -13,6 +13,8 @@ module.exports = app => {
 
     router.get("/:id/quiz", user.findUserQuizzes)
 
+    router.post("/quizCheckAnswer", user.quizCheckAnswer)
+
     router.put("/quiz", user.updateUserQuizzes)
 
     router.put("/:id/cleaQuiz", user.clearQuizzes)

@@ -1,6 +1,7 @@
 const db = require("../models");
 const logger = require("../config/log.config.js");
 const User = db.user;
+const Quiz = db.quiz;
 
 exports.create = (req, res) => {
 
@@ -528,4 +529,83 @@ exports.updateStatusOffline = (req, res) => {
     });
 };
 
+exports.quizCheckAnswer = (req, res) => {
+  const userId = req.body.userId;
+  const quizId = req.body.quizId;
+  if (!userId) {
+    let message = `/quizCheckAnswer userId attribute is missing`;
+    logger.error(message);
+    res.status(400).send({ message: message });
+    return;
+  }
+
+  if (!quizId) {
+    let message = `/quizCheckAnswer quizId attribute is missing`;
+    logger.error(message);
+    res.status(400).send({ message: message });
+    return;
+  }
+
+  Quiz.findById(quizId)
+    .then(quiz => {
+      if (!quiz){
+        let message = `/quizCheckAnswer ${err} Not found Quiz with id ${quizId}.`;
+        logger.error(message);
+        res.status(404).send({ message: message });
+      }else {
+        User.findById(userId)
+        .then(user => {
+          if (!user){
+            let message = `Maybe user was not found with id ${userId}`;
+            logger.error(message);
+            res.status(404).send(message);
+          }else{
+            const userChoice = req.body.userChoice;
+            if(quiz.answer == userChoice){
+              user.point = user.point+1;
+              console.log("user answer is correct! add 1 point");
+            }else{
+              user.life = user.life-1;
+              console.log("user answer is incorrect! reduce 1 life");
+            }
+            User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+            .then(data => {
+              if (!data) {
+                let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                logger.error(message);
+                res.status(404).send({
+                  message: message
+                });
+              } else {
+                let message = `quizCheckAnswer user ${userId} updated successfully`;
+                logger.info(message);
+                res.send(data);
+              }
+            })
+            .catch(err => {
+              let message = `user/login ${err} with id=${id}`
+              logger.error(message);
+              res.status(500).send({
+                message: message
+              });
+            });
+          }
+        })
+        .catch(err => {
+          let message = `${err} Error retrieving User with id ${id}`;
+          logger.error(message);
+          res
+            .status(500)
+            .send({ message: message});
+        });
+      }
+    })
+    .catch(err => {
+      let message = `/quizCheckAnswer ${err} Error retrieving Quiz with id ${quizId}.`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message });
+    });
+};
 
