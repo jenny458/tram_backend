@@ -75,7 +75,7 @@ exports.findOne = (req, res) => {
 exports.random = (req, res) => {
   const userId = req.body.userId;
   if (!userId) {
-    let message = `/quiz/random user id is missing ${userId}`;
+    let message = `/quiz/random userId attribute is missing ${userId}`;
     logger.error(message);
     res.status(400).send({ message: message });
     return;

@@ -7,7 +7,7 @@ module.exports = app => {
   
     router.get("/", user.findAll);
 
-    router.get("/point", user.findByPoint);
+    router.get("/point/:limit", user.findByPoint);
 
     router.get("/today", user.findByDate);
 
@@ -19,8 +19,16 @@ module.exports = app => {
   
     router.get("/:id", user.findOne);
 
+    router.put("/setting", user.updateUserSetting);
+
     router.put("/point", user.point)
-  
+
+    router.put("/life", user.updateUserLife);
+
+    router.put("/login", user.updateStatusOnline);
+
+    router.put("/logout", user.updateStatusOffline);
+
     app.use("/api/user", router);
   };
   

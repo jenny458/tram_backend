@@ -3,6 +3,7 @@ const logger = require("../config/log.config.js");
 const User = db.user;
 
 exports.create = (req, res) => {
+
   const user = new User({
     account_app: req.body.account_app,
     account_name: req.body.account_name,
@@ -12,6 +13,11 @@ exports.create = (req, res) => {
     sex: req.body.sex,
     age: req.body.age,
     chest: 0,
+    music: true,
+    sound: true,
+    caption: req.body.caption,
+    status: "online",
+    life: 50
   });
 
   user
@@ -127,7 +133,9 @@ exports.updateUserQuizzes = (req, res) => {
 };
 
 exports.findByPoint = (req, res) => {
-  User.find({}).sort({ 'point': 'desc' }).limit(10)
+  const limit = req.params.limit;
+  console.log(limit);
+  User.find({}).sort({ 'point': 'desc' }).limit(Number(limit))
     .then(data => {
       let message = `/user find all user by point desc`;
       logger.info(message);
@@ -304,3 +312,220 @@ exports.point = (req, res) => {
         .send({ message: message });
     });
 }; 
+
+
+exports.updateUserSetting = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  const id = req.body.id;
+  if (!id) {
+    let message = `user id is missing ${id}`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+  User.findByIdAndUpdate(id, req.body, { useFindAndModify: false, new: true })
+  .then(data => {
+    if (!data) {
+      let message = `user/setting Cannot update point to user with id=${id}. Maybe user was not found!`;
+      logger.error(message);
+      res.status(404).send({
+        message: message
+      });
+    } else {
+      let message = `user/setting user ${id} update setting with id ${req.body}`;
+      logger.info(message);
+      res.send(data);
+    }
+  })
+  .catch(err => {
+    let message = `user/setting ${err} with id=${id}`
+    logger.error(message);
+    res.status(500).send({
+      message: message
+    });
+  });
+};
+
+exports.updateUserLife = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  const id = req.body.id;
+  if (!id) {
+    let message = `user id is missing ${id}`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+  User.findById(id)
+    .then(data => {
+      if (!data){
+        let message = `Maybe user was not found with id ${id}`;
+        logger.error(message);
+        res.status(404).send(message);
+      }else{
+        data.life = data.life+req.body.life;
+        console.log(data);
+        User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/life Cannot update life to user with id=${id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            let message = `user/life user ${id} added ${req.body.life} life, now total life is ${data.life}`;
+            logger.info(message);
+            res.send(data);
+          }
+        })
+        .catch(err => {
+          let message = `user/life ${err} with id=${id}`
+          logger.error(message);
+          res.status(500).send({
+            message: message
+          });
+        });
+      }
+    })
+    .catch(err => {
+      let message = `${err} Error retrieving User with id ${id}`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message});
+    });
+};
+
+exports.updateStatusOnline = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  const id = req.body.id;
+  if (!id) {
+    let message = `user id is missing ${id}`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+  User.findById(id)
+    .then(data => {
+      if (!data){
+        let message = `Maybe user was not found with id ${id}`;
+        logger.error(message);
+        res.status(404).send(message);
+      }else{
+        data.status = "online";
+        User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/login Cannot update life to user with id=${id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            let message = `user/login user ${id} login successfully`;
+            logger.info(message);
+            res.send({message: message});
+            // res.send(data);
+          }
+        })
+        .catch(err => {
+          let message = `user/login ${err} with id=${id}`
+          logger.error(message);
+          res.status(500).send({
+            message: message
+          });
+        });
+      }
+    })
+    .catch(err => {
+      let message = `${err} Error retrieving User with id ${id}`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message});
+    });
+};
+
+exports.updateStatusOffline = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  const id = req.body.id;
+  if (!id) {
+    let message = `user id is missing ${id}`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+  User.findById(id)
+    .then(data => {
+      if (!data){
+        let message = `Maybe user was not found with id ${id}`;
+        logger.error(message);
+        res.status(404).send(message);
+      }else{
+        data.status = "offline";
+        User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/login Cannot update life to user with id=${id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            let message = `user/login user ${id} logout successfully`;
+            logger.info(message);
+            res.send({message: message});
+            // res.send(data);
+          }
+        })
+        .catch(err => {
+          let message = `user/login ${err} with id=${id}`
+          logger.error(message);
+          res.status(500).send({
+            message: message
+          });
+        });
+      }
+    })
+    .catch(err => {
+      let message = `${err} Error retrieving User with id ${id}`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message});
+    });
+};
+
+

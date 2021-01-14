@@ -13,7 +13,11 @@ module.exports = mongoose => {
         chest: Number,
         quiz:[
           {type:mongoose.Schema.Types.ObjectId, ref:'quiz'}
-        ]
+        ],
+        music: Boolean,
+        sound: Boolean,
+        caption: String,
+        status: String
       },
       { timestamps: true }
     );
