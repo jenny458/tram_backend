@@ -5,6 +5,24 @@ const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
 const _ = require('lodash');
 const multer = require('multer');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJSDoc = require('swagger-jsdoc');
+
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Express API for JSONPlaceholder',
+    version: '1.0.0',
+  },
+};
+
+const options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ['./app/routes/*.js'],
+};
+
+const swaggerSpec = swaggerJSDoc(options);
 
 const app = express();
 
@@ -54,6 +72,7 @@ require("./app/routes/user_activities.route")(app);
 require("./app/routes/setting.route")(app);
 require("./app/routes/fileUpload.route")(app);
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
