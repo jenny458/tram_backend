@@ -3,6 +3,7 @@ module.exports = mongoose => {
       {
         type: String,
         quiz: String,
+        quiz_pic: String,
         choice_type: String,
         choice_1: String,
         choice_2: String,

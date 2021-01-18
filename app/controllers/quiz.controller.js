@@ -8,6 +8,7 @@ exports.create = (req, res) => {
   const quiz = new Quiz({
     type: req.body.type,
     quiz: req.body.quiz,
+    quiz_pic: req.body.quiz_pic,
     choice_type: req.body.choice_type,
     choice_1: req.body.choice_1,
     choice_2: req.body.choice_2,
