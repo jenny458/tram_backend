@@ -5,10 +5,15 @@ const Setting = db.setting;
 
 exports.create = (req, res) => {
   const setting = new Setting({
-    active: 0,
-    promotion_number: req.body.promotion_number,
-    random_promotion_of_the_day: req.body.random_reward_of_the_day,
-    promotions:req.body.promotions
+    active: 1,
+    // promotion_number: req.body.promotion_number,
+    // random_promotion_of_the_day: req.body.random_reward_of_the_day,
+    // promotions:req.body.promotions
+    bonus: req.body.bonus,
+    bonus_time_start_hour: req.body.bonus_time_start_hour,
+    bonus_time_start_minute: req.body.bonus_time_start_minute,
+    bonus_time_end_hour: req.body.bonus_time_end_hour,
+    bonus_time_end_minute: req.body.bonus_time_end_minute
   });
 
   setting

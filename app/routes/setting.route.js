@@ -5,7 +5,7 @@ module.exports = app => {
   
     router.post("/", setting.create);
   
-    router.get("/", setting.findOne);
+    router.get("/", setting.findAll);
   
     // router.get("/:id", setting.findOne);
   
