@@ -11,10 +11,12 @@ const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Express API for JSONPlaceholder',
+    title: 'Express API',
     version: '1.0.0',
   },
 };
+
+const allowedOrigins = ['http://localhost:4200'];
 
 const options = {
   swaggerDefinition,
@@ -27,7 +29,18 @@ const swaggerSpec = swaggerJSDoc(options);
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:8081"
+  origin: function(origin, callback){
+    // allow requests with no origin 
+    // (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);
+    if(allowedOrigins.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
