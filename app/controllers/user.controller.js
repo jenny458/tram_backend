@@ -594,7 +594,7 @@ exports.quizCheckAnswer = (req, res) => {
             if(seconds > quiz.timer){
               let message = `quizCheckAnswer user take too long to answer`;
               logger.info(message);
-              res.send({result: "too long to answer"});
+              res.send({result: "time's up"});
             }else{
               const userChoice = req.body.userChoice;
               if(quiz.answer == userChoice){
