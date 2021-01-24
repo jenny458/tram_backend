@@ -175,7 +175,7 @@ exports.getTheme = (req, res) => {
     (hour == 22) && (minute == 0)
   ){
     //20:01 – 22:00
-    res.send({theme: "North Eastern"})
+    res.send({theme: "Northeastern"})
   }
 
 };
