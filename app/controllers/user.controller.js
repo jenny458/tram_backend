@@ -5,7 +5,6 @@ const Quiz = db.quiz;
 
 exports.create = (req, res) => {
 
-  console.log('req.body.account_id', req.body.account_id);
   if(!req.body.account_id){
     let message = `user account_id is missing`;
     logger.error(message);
@@ -16,9 +15,7 @@ exports.create = (req, res) => {
 
   User.find({account_id: req.body.account_id})
   .then(data => {
-    console.log('data', data);
     if(data.length == 0){
-      console.log('not found user create new');
       const user = new User({
         account_id: req.body.account_id,
         mobile: req.body.mobile,
@@ -43,7 +40,6 @@ exports.create = (req, res) => {
       user
         .save(user)
         .then(data => {
-          console.log('successfully created user', data);
           let message = `/user has been create with id ${data.id}`;
           logger.info(message);
           res.send(data);
@@ -56,7 +52,6 @@ exports.create = (req, res) => {
           });
         });
     }else{
-      console.log('found user return data', data);
       res.send(data[0]);
     }
   })
@@ -167,7 +162,6 @@ exports.updateUserQuizzes = (req, res) => {
 
 exports.findByPoint = (req, res) => {
   const limit = req.params.limit;
-  console.log(limit);
   User.find({}).sort({ 'point': 'desc' }).limit(Number(limit))
     .then(data => {
       let message = `/user find all user by point desc`;
@@ -412,7 +406,6 @@ exports.updateUserLife = (req, res) => {
         res.status(404).send(message);
       }else{
         data.life = data.life+req.body.life;
-        console.log(data);
         User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
         .then(data => {
           if (!data) {
@@ -595,11 +588,11 @@ exports.quizCheckAnswer = (req, res) => {
             const userChoice = req.body.userChoice;
             if(quiz.answer == userChoice){
               user.point = user.point+quiz.point;
-              console.log("user answer is correct! add 1 point");
+              logger.info("user answer is correct! add 1 point");
             }else{
               user.life = user.life-1;
               user.latestLifeTimestamp = new Date();
-              console.log("user answer is incorrect! reduce 1 life");
+              logger.info("user answer is incorrect! reduce 1 life");
             }
             User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
             .then(data => {
