@@ -129,3 +129,53 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+exports.getTheme = (req, res) => {
+  
+  let nz_date_string = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
+  let date_ob = new Date(nz_date_string);
+  let hour = date_ob.getHours();
+  let minute = date_ob.getMinutes();
+
+  if( 
+      (hour == 12 && (minute >= 0 && minute <= 59)) ||
+      (hour == 13 && (minute >= 0 && minute <= 59)) ||
+      (hour == 14) && (minute == 0)
+  ){ 
+    //12:00 – 14:00
+    res.send({theme: "Northern"})
+  }else if(
+    (hour == 14 && (minute >= 1 && minute <= 59)) ||
+    (hour == 15 && (minute >= 0 && minute <= 59)) ||
+    (hour == 16) && (minute == 0)
+  ){ 
+    //14:01 – 16:00
+    res.send({theme: "Southern"})
+  }else if(
+    (hour == 16 && (minute >= 1 && minute <= 59)) ||
+    (hour == 17 && (minute >= 0 && minute <= 59)) ||
+    (hour == 18) && (minute == 0) ||
+    (hour == 22 && (minute >= 1 && minute <= 59)) ||
+    (hour == 23 && (minute >= 0 && minute <= 59)) ||
+    (hour == 24) && (minute == 0)
+  ){
+    //16:01 – 18:00 
+    //22:01 – 24:00
+    res.send({theme: "All"})
+  } else if(
+    (hour == 18 && (minute >= 1 && minute <= 59)) ||
+    (hour == 19 && (minute >= 0 && minute <= 59)) ||
+    (hour == 20) && (minute == 0)
+  ){
+    //18:01 – 20:00
+    res.send({theme: "Central"})
+  }else if(
+    (hour == 20 && (minute >= 1 && minute <= 59)) ||
+    (hour == 21 && (minute >= 0 && minute <= 59)) ||
+    (hour == 22) && (minute == 0)
+  ){
+    //20:01 – 22:00
+    res.send({theme: "Nort Eastern"})
+  }
+
+};

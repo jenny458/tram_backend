@@ -32,7 +32,7 @@ exports.create = (req, res) => {
 };
 
 exports.findAll = (req, res) => {
-  Quiz.find({})
+  Quiz.find({}).sort({ 'createdAt': 'desc' })
     .then(data => {
       res.send(data);
     })
@@ -239,6 +239,31 @@ exports.deleteAll = (req, res) => {
       res.send({
         message: `${data.deletedCount} Quizzes were deleted successfully!`
       });
+    })
+    .catch(err => {
+      let message = `${err} Some error occurred while removing all quizzes.`;
+      logger.error(message);
+      res.status(500).send({
+        message: message
+      });
+    });
+};
+
+exports.search = (req, res) => {
+  const key = req.body.key;
+  const rgx = (pattern) => new RegExp(`.*${pattern}.*`);
+  const searchRgx = rgx(key);
+  
+  Quiz.find({
+      $or: [
+        { quiz: { $regex: searchRgx, $options: "i" } },
+        { choice_1: { $regex: searchRgx, $options: "i" } },
+        { choice_2: { $regex: searchRgx, $options: "i" } },
+      ],
+    })
+    .sort({ 'createdAt': 'desc' })
+    .then(data => {
+      res.send(data);
     })
     .catch(err => {
       let message = `${err} Some error occurred while removing all quizzes.`;

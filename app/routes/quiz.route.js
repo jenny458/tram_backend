@@ -16,6 +16,8 @@ module.exports = app => {
     router.delete("/:id", quiz.delete);
   
     router.delete("/", quiz.deleteAll);
+
+    router.post("/search", quiz.search)
   
     app.use("/api/quiz", router);
   };

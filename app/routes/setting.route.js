@@ -14,6 +14,8 @@ module.exports = app => {
     // router.delete("/:id", setting.delete);
   
     // router.delete("/", setting.deleteAll);
+
+    router.get("/theme", setting.getTheme)
   
     app.use("/api/setting", router);
   };
