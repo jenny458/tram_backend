@@ -114,6 +114,7 @@ exports.random = (req, res) => {
               });
             } else {
               data.quiz.push(randomQuiz.id);
+              data.userQuizTimestamp = new Date();
               User.findByIdAndUpdate(userId, data, { useFindAndModify: false, new: true })
               .then(data => {
                 if (!data) {

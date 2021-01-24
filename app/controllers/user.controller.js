@@ -588,40 +588,49 @@ exports.quizCheckAnswer = (req, res) => {
             logger.error(message);
             res.status(404).send(message);
           }else{
-            const userChoice = req.body.userChoice;
-            if(quiz.answer == userChoice){
-              user.point = user.point+quiz.point;
-              logger.info("user answer is correct! add 1 point");
+
+            let current = new Date().getTime();
+            let seconds = (current - user.userQuizTimestamp.getTime()) / 1000;
+            if(seconds > quiz.timer){
+              let message = `quizCheckAnswer user take too long to answer`;
+              logger.info(message);
+              res.send({result: "too long to answer"});
             }else{
-              user.life = user.life-1;
-              user.latestLifeTimestamp = new Date();
-              logger.info("user answer is incorrect! reduce 1 life");
-            }
-            User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
-            .then(data => {
-              if (!data) {
-                let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+              const userChoice = req.body.userChoice;
+              if(quiz.answer == userChoice){
+                user.point = user.point+quiz.point;
+                logger.info("user answer is correct! add 1 point");
+              }else{
+                user.life = user.life-1;
+                user.latestLifeTimestamp = new Date();
+                logger.info("user answer is incorrect! reduce 1 life");
+              }
+              User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+              .then(data => {
+                if (!data) {
+                  let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                  logger.error(message);
+                  res.status(404).send({
+                    message: message
+                  });
+                } else {
+                  let message = `quizCheckAnswer user ${userId} updated successfully`;
+                  logger.info(message);
+                  res.send({result: quiz.answer == userChoice, user:data});
+                }
+              })
+              .catch(err => {
+                let message = `user/login ${err} with id=${userId}`
                 logger.error(message);
-                res.status(404).send({
+                res.status(500).send({
                   message: message
                 });
-              } else {
-                let message = `quizCheckAnswer user ${userId} updated successfully`;
-                logger.info(message);
-                res.send({result: quiz.answer == userChoice, user:data});
-              }
-            })
-            .catch(err => {
-              let message = `user/login ${err} with id=${id}`
-              logger.error(message);
-              res.status(500).send({
-                message: message
               });
-            });
+            }
           }
         })
         .catch(err => {
-          let message = `${err} Error retrieving User with id ${id}`;
+          let message = `${err} Error retrieving User with id ${userId }`;
           logger.error(message);
           res
             .status(500)

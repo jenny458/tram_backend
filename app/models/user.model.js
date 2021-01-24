@@ -23,6 +23,7 @@ module.exports = mongoose => {
         caption: String,
         status: String,
         latestLifeTimestamp: Date,
+        userQuizTimestamp: Date,
         // account_app: String,
         // account_name: String,
         // account_photo_url: String,
