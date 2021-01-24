@@ -1,15 +1,19 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema(
       {
-        account_app: String,
-        account_name: String,
-        account_photo_url: String,
+        account_id: String,
+        mobile: String,
+        email: String,
+        email_verify: Boolean,
+        profile_url:String,
+        gender: String,
+        full_name: String,
+        first_name: String,
+        last_name: String,
+        jid: String,
         avatar: String,
         point: Number,
-        sex: String,
-        age: Number,
         life: Number,
-        birth_day: Date,
         chest: Number,
         quiz:[
           {type:mongoose.Schema.Types.ObjectId, ref:'quiz'}
@@ -17,7 +21,13 @@ module.exports = mongoose => {
         music: Boolean,
         sound: Boolean,
         caption: String,
-        status: String
+        status: String,
+        latestLifeTimestamp: Date,
+        // account_app: String,
+        // account_name: String,
+        // account_photo_url: String,
+        // age: Number,
+        // birth_day: Date,
       },
       { timestamps: true }
     );

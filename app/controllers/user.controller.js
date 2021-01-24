@@ -5,36 +5,68 @@ const Quiz = db.quiz;
 
 exports.create = (req, res) => {
 
-  const user = new User({
-    account_app: req.body.account_app,
-    account_name: req.body.account_name,
-    account_photo_url: req.body.account_photo_url,
-    avatar: req.body.avatar,
-    point: 0,
-    sex: req.body.sex,
-    age: req.body.age,
-    chest: 0,
-    music: true,
-    sound: true,
-    caption: req.body.caption,
-    status: "online",
-    life: 50
-  });
+  console.log('req.body.account_id', req.body.account_id);
+  if(!req.body.account_id){
+    let message = `user account_id is missing`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
 
-  user
-    .save(user)
-    .then(data => {
-      let message = `/user has been create with id ${data.id}`;
-      logger.info(message);
-      res.send(data);
-    })
-    .catch(err => {
-      let message = `/user ${err} Some error occurred while creating the User`;
-      logger.error(message);
-      res.status(500).send({
-        message:message
+
+  User.find({account_id: req.body.account_id})
+  .then(data => {
+    console.log('data', data);
+    if(data.length == 0){
+      console.log('not found user create new');
+      const user = new User({
+        account_id: req.body.account_id,
+        mobile: req.body.mobile,
+        email: req.body.email,
+        email_verify: req.body.email_verify,
+        profile_url:req.body.profile_url,
+        gender: req.body.gender,
+        full_name: req.body.full_name,
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        jid: req.body.jid,
+        avatar: req.body.avatar,
+        point: 0,
+        chest: 0,
+        music: true,
+        sound: true,
+        caption: req.body.caption,
+        status: "online",
+        life: 50
       });
+    
+      user
+        .save(user)
+        .then(data => {
+          console.log('successfully created user', data);
+          let message = `/user has been create with id ${data.id}`;
+          logger.info(message);
+          res.send(data);
+        })
+        .catch(err => {
+          let message = `/user ${err} Some error occurred while creating the User`;
+          logger.error(message);
+          res.status(500).send({
+            message:message
+          });
+        });
+    }else{
+      console.log('found user return data', data);
+      res.send(data[0]);
+    }
+  })
+  .catch(err => {
+    let message = `/user ${err} Some error occurred while retrieving Users with id ${id}`;
+    logger.error(message);
+    res.status(500).send({
+      message: message
     });
+  });
 };
 
 exports.findAll = (req, res) => {
@@ -566,6 +598,7 @@ exports.quizCheckAnswer = (req, res) => {
               console.log("user answer is correct! add 1 point");
             }else{
               user.life = user.life-1;
+              user.latestLifeTimestamp = new Date();
               console.log("user answer is incorrect! reduce 1 life");
             }
             User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
