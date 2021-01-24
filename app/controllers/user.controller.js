@@ -406,6 +406,9 @@ exports.updateUserLife = (req, res) => {
         res.status(404).send(message);
       }else{
         data.life = data.life+req.body.life;
+        if(data.life > 50){
+          data.life = 50;
+        }
         User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
         .then(data => {
           if (!data) {
