@@ -22,6 +22,7 @@ module.exports = mongoose => {
         sound: Boolean,
         caption: String,
         status: String,
+        addLife: Boolean,
         latestLifeTimestamp: Date,
         userQuizTimestamp: Date,
         // account_app: String,

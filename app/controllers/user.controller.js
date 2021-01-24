@@ -34,7 +34,8 @@ exports.create = (req, res) => {
         sound: true,
         caption: req.body.caption,
         status: "online",
-        life: 50
+        life: 50,
+        addLife: false
       });
     
       user
@@ -409,6 +410,13 @@ exports.updateUserLife = (req, res) => {
         if(data.life > 50){
           data.life = 50;
         }
+
+        if(data.life < 50){
+          data.latestLifeTimestamp = new Date();
+          data.addLife = true;
+        }else if(data.life == 50){
+          data.addLife = false;
+        }
         User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
         .then(data => {
           if (!data) {
@@ -603,6 +611,7 @@ exports.quizCheckAnswer = (req, res) => {
               }else{
                 user.life = user.life-1;
                 user.latestLifeTimestamp = new Date();
+                user.addLife = true;
                 logger.info("user answer is incorrect! reduce 1 life");
               }
               User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
