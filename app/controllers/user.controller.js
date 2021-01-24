@@ -2,6 +2,7 @@ const db = require("../models");
 const logger = require("../config/log.config.js");
 const User = db.user;
 const Quiz = db.quiz;
+const Setting = db.setting;
 
 exports.create = (req, res) => {
 
@@ -596,7 +597,6 @@ exports.quizCheckAnswer = (req, res) => {
             logger.error(message);
             res.status(404).send(message);
           }else{
-
             let current = new Date().getTime();
             let seconds = (current - user.userQuizTimestamp.getTime()) / 1000;
             if(seconds > quiz.timer){
@@ -606,35 +606,79 @@ exports.quizCheckAnswer = (req, res) => {
             }else{
               const userChoice = req.body.userChoice;
               if(quiz.answer == userChoice){
-                user.point = user.point+quiz.point;
-                logger.info("user answer is correct! add 1 point");
+                Setting.find({})
+                .then(data => {
+                  let nz_date_string = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
+                  let date_ob = new Date(nz_date_string);
+                  let hour = date_ob.getHours();
+                  let minute = date_ob.getMinutes();
+                  if( (data[0].bonus_time_start_hour >= hour && data[0].bonus_time_end_hour <= hour) &&
+                      (data[0].bonus_time_start_minute <= minute && data[0].bonus_time_end_minute >= minute)
+                  ){
+                    user.point = user.point+(quiz.point * data[0].bonus);
+                    console.log(quiz.point * data[0].bonus)
+                    logger.info("user answer is correct! add {} point", quiz.point * data[0].bonus);
+                  }else{
+                    user.point = user.point+quiz.point;
+                    console.log(quiz.point * data[0].bonus)
+                    logger.info("user answer is correct! add 1 point");
+                  }
+
+                  User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+                  .then(data => {
+                    if (!data) {
+                      let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                      logger.error(message);
+                      res.status(404).send({
+                        message: message
+                      });
+                    } else {
+                      let message = `quizCheckAnswer user ${userId} updated successfully`;
+                      logger.info(message);
+                      res.send({result: quiz.answer == userChoice, user:data});
+                    }
+                  })
+                  .catch(err => {
+                    let message = `user/login ${err} with id=${id}`
+                    logger.error(message);
+                    res.status(500).send({
+                      message: message
+                    });
+                  });
+                })
+                .catch(err => {
+                  res.status(500).send({
+                    message:
+                      err.message || "Some error occurred while retrieving Setting."
+                  });
+                });
               }else{
                 user.life = user.life-1;
                 user.latestLifeTimestamp = new Date();
                 user.addLife = true;
                 logger.info("user answer is incorrect! reduce 1 life");
-              }
-              User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
-              .then(data => {
-                if (!data) {
-                  let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+                .then(data => {
+                  if (!data) {
+                    let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                    logger.error(message);
+                    res.status(404).send({
+                      message: message
+                    });
+                  } else {
+                    let message = `quizCheckAnswer user ${userId} updated successfully`;
+                    logger.info(message);
+                    res.send({result: quiz.answer == userChoice, user:data});
+                  }
+                })
+                .catch(err => {
+                  let message = `user/login ${err} with id=${userId}`
                   logger.error(message);
-                  res.status(404).send({
+                  res.status(500).send({
                     message: message
                   });
-                } else {
-                  let message = `quizCheckAnswer user ${userId} updated successfully`;
-                  logger.info(message);
-                  res.send({result: quiz.answer == userChoice, user:data});
-                }
-              })
-              .catch(err => {
-                let message = `user/login ${err} with id=${userId}`
-                logger.error(message);
-                res.status(500).send({
-                  message: message
                 });
-              });
+              }
             }
           }
         })
