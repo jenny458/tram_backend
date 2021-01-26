@@ -126,7 +126,17 @@ exports.random = (req, res) => {
                 } else {
                   let message = `user/quiz user ${userId} update quiz with id ${randomQuiz.id}`;
                   logger.info(message);
-                  res.send(randomQuiz);
+                  res.send({
+                    choice_1: randomQuiz.choice_1,
+                    choice_2: randomQuiz.choice_2,
+                    choice_type: randomQuiz.choice_type,
+                    id: randomQuiz.id,
+                    point: randomQuiz.point,
+                    quiz: randomQuiz.quiz,
+                    quiz_pic: randomQuiz.quiz_pic,
+                    timer: randomQuiz.timer,
+                    type: randomQuiz.type
+                  });
                 }
               })
               .catch(err => {
