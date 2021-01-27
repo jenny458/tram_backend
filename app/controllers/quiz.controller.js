@@ -99,8 +99,8 @@ exports.random = (req, res) => {
           res.status(404).send({ message: message });
         }else if(data.length == 0){
           let message = `/quiz/random No more Quiz for this User ${userId}`;
-          logger.error(message);
-          res.status(404).send({ message: message });
+          logger.info(message);
+          res.send({});
         }else {
           const randomIndex = Math.floor(Math.random() * (data.length - 0) + 0 );
           const randomQuiz = data[randomIndex];
