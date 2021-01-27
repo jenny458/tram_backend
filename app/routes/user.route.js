@@ -17,7 +17,7 @@ module.exports = app => {
 
     router.put("/quiz", user.updateUserQuizzes)
 
-    router.put("/:id/cleaQuiz", user.clearQuizzes)
+    router.put("/:id/clearQuiz", user.clearQuizzes)
   
     router.get("/:id", user.findOne);
 
