@@ -138,20 +138,34 @@ exports.getTheme = (req, res) => {
   let minute = date_ob.getMinutes();
 
   if( 
-      (hour == 12 && (minute >= 0 && minute <= 59)) ||
+      (hour == 0 && (minute >= 1 && minute <= 59)) ||
+      (hour == 1 && (minute >= 0 && minute <= 59)) ||
+      (hour == 2) && (minute == 0) ||
+      (hour == 12 && (minute >= 1 && minute <= 59)) ||
       (hour == 13 && (minute >= 0 && minute <= 59)) ||
       (hour == 14) && (minute == 0)
   ){ 
-    //12:00 – 14:00
+    //0.01 - 2.00
+    //12:01 – 14:00
     res.send({theme: "Northern"})
   }else if(
+    (hour == 2 && (minute >= 1 && minute <= 59)) ||
+    (hour == 3 && (minute >= 0 && minute <= 59)) ||
+    (hour == 4) && (minute == 0) ||
     (hour == 14 && (minute >= 1 && minute <= 59)) ||
     (hour == 15 && (minute >= 0 && minute <= 59)) ||
     (hour == 16) && (minute == 0)
   ){ 
+    //2.01 - 4.00
     //14:01 – 16:00
     res.send({theme: "Southern"})
   }else if(
+    (hour == 4 && (minute >= 1 && minute <= 59)) ||
+    (hour == 5 && (minute >= 0 && minute <= 59)) ||
+    (hour == 6) && (minute == 0) ||
+    (hour == 10 && (minute >= 1 && minute <= 59)) ||
+    (hour == 11 && (minute >= 0 && minute <= 59)) ||
+    (hour == 12) && (minute == 0) ||
     (hour == 16 && (minute >= 1 && minute <= 59)) ||
     (hour == 17 && (minute >= 0 && minute <= 59)) ||
     (hour == 18) && (minute == 0) ||
@@ -159,21 +173,31 @@ exports.getTheme = (req, res) => {
     (hour == 23 && (minute >= 0 && minute <= 59)) ||
     (hour == 24) && (minute == 0)
   ){
+    //4.01 - 6.00
+    //10.01 - 12.00
     //16:01 – 18:00 
     //22:01 – 24:00
     res.send({theme: "All"})
   } else if(
+    (hour == 6 && (minute >= 1 && minute <= 59)) ||
+    (hour == 7 && (minute >= 0 && minute <= 59)) ||
+    (hour == 8) && (minute == 0) ||
     (hour == 18 && (minute >= 1 && minute <= 59)) ||
     (hour == 19 && (minute >= 0 && minute <= 59)) ||
     (hour == 20) && (minute == 0)
   ){
+    //6.01-8.00
     //18:01 – 20:00
     res.send({theme: "Central"})
   }else if(
+    (hour == 8 && (minute >= 1 && minute <= 59)) ||
+    (hour == 9 && (minute >= 0 && minute <= 59)) ||
+    (hour == 10) && (minute == 0) ||
     (hour == 20 && (minute >= 1 && minute <= 59)) ||
     (hour == 21 && (minute >= 0 && minute <= 59)) ||
     (hour == 22) && (minute == 0)
   ){
+    //8.01 - 10.00
     //20:01 – 22:00
     res.send({theme: "Northeastern"})
   }
