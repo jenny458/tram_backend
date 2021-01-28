@@ -35,7 +35,7 @@ exports.create = (req, res) => {
         sound: true,
         caption: req.body.caption,
         status: "online",
-        life: 50,
+        life: 5,
         addLife: false
       });
     
@@ -635,7 +635,7 @@ exports.quizCheckAnswer = (req, res) => {
                     } else {
                       let message = `quizCheckAnswer user ${userId} updated successfully`;
                       logger.info(message);
-                      res.send({result: quiz.answer == userChoice, user:data});
+                      res.send({result: quiz.answer == userChoice, point:data.point, life: data.life});
                     }
                   })
                   .catch(err => {
@@ -668,7 +668,7 @@ exports.quizCheckAnswer = (req, res) => {
                   } else {
                     let message = `quizCheckAnswer user ${userId} updated successfully`;
                     logger.info(message);
-                    res.send({result: quiz.answer == userChoice, user:data});
+                    res.send({result: quiz.answer == userChoice, point:data.point, life: data.life});
                   }
                 })
                 .catch(err => {
