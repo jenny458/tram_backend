@@ -3,6 +3,7 @@ const logger = require("../config/log.config.js");
 const User = db.user;
 const Quiz = db.quiz;
 const Setting = db.setting;
+const UserActivities = db.user_activities;
 
 exports.create = (req, res) => {
 
@@ -12,7 +13,6 @@ exports.create = (req, res) => {
     res.status(400).send(message);
     return;
   }
-
 
   User.find({account_id: req.body.account_id})
   .then(data => {
@@ -36,7 +36,8 @@ exports.create = (req, res) => {
         caption: req.body.caption,
         status: "online",
         life: 5,
-        addLife: false
+        addLife: false,
+        showTutorial: true
       });
     
       user
@@ -44,6 +45,7 @@ exports.create = (req, res) => {
         .then(data => {
           let message = `/user has been create with id ${data.id}`;
           logger.info(message);
+          const activity = new UserActivities({activity: "LOGIN", user_id:data.id}).save();
           res.send(data);
         })
         .catch(err => {
@@ -54,6 +56,7 @@ exports.create = (req, res) => {
           });
         });
     }else{
+      const activity = new UserActivities({activity: "LOGIN", user_id:data[0].id}).save();
       res.send(data[0]);
     }
   })
@@ -163,8 +166,9 @@ exports.updateUserQuizzes = (req, res) => {
 };
 
 exports.findByPoint = (req, res) => {
+  let select = req.query.point == "true" ? "full_name point -_id" : "full_name profile_url -_id";
   const limit = req.params.limit;
-  User.find({}).sort({ 'point': 'desc' }).limit(Number(limit))
+  User.find({}).sort({ 'point': 'desc' }).limit(Number(limit)).select(select)
     .then(data => {
       let message = `/user find all user by point desc`;
       logger.info(message);
@@ -179,8 +183,32 @@ exports.findByPoint = (req, res) => {
     });
 };
 
+exports.selfRank = (req, res) => {
+  const id = req.body.id;
+  User.find({}).sort({ 'point': 'desc' }).select('_id')
+    .then(data => {
+      let message = `/user find user self rank`;
+      logger.info(message);
+      let index;
+      for (var i = 0; i < data.length; i++) {
+            if (data[i]._id == id) {
+              index = i
+              break;
+            }
+      }
+      res.send({ranking: index+1});
+    })
+    .catch(err => {
+      let message = `/user ${err} Some error occurred while retrieving Users`;
+      logger.error(message);
+      res.status(500).send({
+        message: message
+      });
+    });
+};
 
-exports.findByDate = (req, res) => {
+
+exports.findToday = (req, res) => {
   let now = new Date();
   let start = new Date(now.getFullYear(),now.getMonth(),now.getDate(),1,0,0);
 
@@ -697,6 +725,64 @@ exports.quizCheckAnswer = (req, res) => {
       res
         .status(500)
         .send({ message: message });
+    });
+};
+
+
+exports.updateTutorial = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  const id = req.body.id;
+  if (!id) {
+    let message = `user id is missing ${id}`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+  User.findById(id)
+    .then(data => {
+      if (!data){
+        let message = `Maybe user was not found with id ${id}`;
+        logger.error(message);
+        res.status(404).send(message);
+      }else{
+        data.showTutorial = false;
+        User.findByIdAndUpdate(id, data, { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/tutorial Cannot update life to user with id=${id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            let message = `user/tutorial user ${id} successfully updated showToturial`;
+            logger.info(message);
+            res.send({message: message});
+          }
+        })
+        .catch(err => {
+          let message = `user/tutorial ${err} with id=${id}`
+          logger.error(message);
+          res.status(500).send({
+            message: message
+          });
+        });
+      }
+    })
+    .catch(err => {
+      let message = `${err} Error retrieving User with id ${id}`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message});
     });
 };
 

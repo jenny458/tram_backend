@@ -54,3 +54,151 @@ exports.findOne = (req, res) => {
         .send({ message: "Error retrieving User with id=" + id });
     });
 };
+
+exports.countByDate = (req, res) => {
+  User_Activities.aggregate([
+    { 
+      $match: { activity: "LOGIN" }
+    },
+    {
+      $group: {
+          _id: {
+            day: {
+              $dayOfMonth: "$createdAt"
+            },
+            month: {
+              $month: "$createdAt"
+            },
+            year: {
+              $year: "$createdAt"
+            },
+            user_id: "$user_id",
+          }
+      }
+    },
+    { 
+      $project : { 
+        day: "$_id.day",
+        month: "$_id.month",
+        year: "$_id.year",
+      } 
+    },
+    {
+      $group: {
+          _id: {
+            day: "$day",
+            month: "$month",
+            year: "$year",
+          },
+          count: {
+              $sum: 1
+          },
+      }
+    },
+    { $sort: { "_id.month": 1, "_id.day": 1 } }
+  ], (error, count) => {
+      if (error) {
+          logger.error(error);
+          res
+            .status(500)
+            .send({ message: "Error retrieving User_Activities"});
+      } else {
+        logger.info("Retrieved count user by date");
+        res.send(count);
+      }
+  });
+};
+
+exports.countByHour = (req, res) => {
+  User_Activities.aggregate([
+    { 
+      $match: { activity: "LOGIN" }
+    },
+    {
+      $group: {
+          _id: {
+            day: {
+              $dayOfMonth: "$createdAt"
+            },
+            month: {
+              $month: "$createdAt"
+            },
+            year: {
+              $year: "$createdAt"
+            },
+            hour: {
+              $hour: "$createdAt"
+            },
+            user_id: "$user_id",
+          }
+      }
+    },
+    { 
+      $project : { 
+        day: "$_id.day",
+        month: "$_id.month",
+        year: "$_id.year",
+        hour: "$_id.hour"
+      } 
+    },
+    {
+      $group: {
+          _id: {
+            day: "$day",
+            month: "$month",
+            year: "$year",
+            hour: "$hour"
+          },
+          count: {
+              $sum: 1
+          },
+      }
+    },
+    { $sort: { "_id.month": 1, "_id.day": 1, "_id.hour": 1 } }
+  ], (error, count) => {
+      if (error) {
+          logger.error(error);
+          res
+            .status(500)
+            .send({ message: "Error retrieving User_Activities"});
+      } else {
+        logger.info("Retrieved count user by date");
+        res.send(count);
+      }
+  });
+};
+
+
+exports.getDateReport = (req, res) => {
+  User_Activities.aggregate([
+    { 
+      $match: { activity: "LOGIN" }
+    },
+    {
+      $group: {
+          _id: {
+            day: {
+              $dayOfMonth: "$createdAt"
+            },
+            month: {
+              $month: "$createdAt"
+            },
+            year: {
+              $year: "$createdAt"
+            }
+          }
+      }
+    },
+    { $sort: { "_id.month": 1, "_id.day": 1} }
+  ], (error, count) => {
+      if (error) {
+          logger.error(error);
+          res
+            .status(500)
+            .send({ message: "Error retrieving User_Activities"});
+      } else {
+        logger.info("Retrieved count user by date");
+        res.send(count);
+      }
+  });
+};

@@ -25,6 +25,7 @@ module.exports = mongoose => {
         addLife: Boolean,
         latestLifeTimestamp: Date,
         userQuizTimestamp: Date,
+        showTutorial: Boolean,
         // account_app: String,
         // account_name: String,
         // account_photo_url: String,

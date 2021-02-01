@@ -9,7 +9,7 @@ module.exports = app => {
 
     router.get("/point/:limit", user.findByPoint);
 
-    router.get("/today", user.findByDate);
+    router.get("/today", user.findToday);
 
     router.get("/:id/quiz", user.findUserQuizzes)
 
@@ -30,6 +30,10 @@ module.exports = app => {
     router.put("/login", user.updateStatusOnline);
 
     router.put("/logout", user.updateStatusOffline);
+
+    router.put("/tutorial", user.updateTutorial);
+
+    router.post("/selfRank", user.selfRank);
 
     app.use("/api/user", router);
   };
