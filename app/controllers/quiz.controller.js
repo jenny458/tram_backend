@@ -81,16 +81,14 @@ exports.random = (req, res) => {
     res.status(400).send({ message: message });
     return;
   }
-
   User.findById(userId)
-    .then(data => {
+    .then(user => {
       let message = `/user find user quizzes`;
       logger.info(message);
       let quizzes = []
-      if(data.quiz && data.quiz.length > 0){
-        quizzes = data.quiz;
+      if(user.quiz && user.quiz.length > 0){
+        quizzes = user.quiz;
       }
-
       Quiz.find({ "_id": { "$nin": quizzes } } )
       .then(data => {
         if (!data){
@@ -98,10 +96,101 @@ exports.random = (req, res) => {
           logger.error(message);
           res.status(404).send({ message: message });
         }else if(data.length == 0){
-          let message = `/quiz/random No more Quiz for this User ${userId}`;
+          let message = `/quiz/random No more Quiz for this User ${userId}, reset quiz`;
           logger.info(message);
-          res.send({});
-        }else {
+          user.quiz = [];
+          User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+          .then(data => {
+            if (!data) {
+              let message = `user/quiz Cannot update point to user with id=${userId}. Maybe user was not found!`;
+              logger.error(message);
+              res.status(404).send({
+                message: message
+              });
+            } else {
+              console.log('done reset!')
+              Quiz.find({} )
+              .then(newQuiz => {
+                if(!newQuiz){
+                  let message = `get quiz has something error!`;
+                  logger.error(message);
+                  res.status(404).send({
+                    message: message
+                  });
+                }else{
+                  User.findById(userId)
+                  .then(data => {
+                    if (!data) {
+                      let message = `user/quiz Cannot update point to user with id=${userId}. Maybe user was not found!`;
+                      logger.error(message);
+                      res.status(404).send({
+                        message: message
+                      });
+                    } else {
+                      const randomIndex = Math.floor(Math.random() * (newQuiz.length - 0) + 0 );
+                      let new_quiz = newQuiz[randomIndex];
+                      data.quiz.push(newQuiz[randomIndex]);
+                      data.userQuizTimestamp = new Date();
+                      User.findByIdAndUpdate(userId, data, { useFindAndModify: false, new: true })
+                      .then(data => {
+                        if (!data) {
+                          let message = `user/quiz Cannot update point to user with id=${userId}. Maybe user was not found!`;
+                          logger.error(message);
+                          res.status(404).send({
+                            message: message
+                          });
+                        } else {
+                          let message = `user/quiz user ${userId} update quiz with id ${new_quiz.id}`;
+                          logger.info(message);
+                          res.send({
+                            choice_1: new_quiz.choice_1,
+                            choice_2: new_quiz.choice_2,
+                            choice_type: new_quiz.choice_type,
+                            id: new_quiz.id,
+                            point: new_quiz.point,
+                            quiz: new_quiz.quiz,
+                            quiz_pic: new_quiz.quiz_pic,
+                            timer: new_quiz.timer,
+                            type: new_quiz.type
+                          });
+                        }
+                      })
+                      .catch(err => {
+                        let message = `user/quiz ${err} with id=${userId}`
+                        logger.error(message);
+                        res.status(500).send({
+                          message: message
+                        });
+                      });
+                    }
+                  })
+                  .catch(err => {
+                    let message = `user/quiz ${err} with id=${userId}`
+                    logger.error(message);
+                    res.status(500).send({
+                      message: message
+                    });
+                  });
+
+                }
+              })
+              .catch(err => {
+                let message = `quiz/ ${err} `
+                logger.error(message);
+                res.status(500).send({
+                  message: message
+                });
+              });
+            }
+          })
+          .catch(err => {
+            let message = `user/quiz ${err} with id=${userId}`
+            logger.error(message);
+            res.status(500).send({
+              message: message
+            });
+          });
+        } else {
           const randomIndex = Math.floor(Math.random() * (data.length - 0) + 0 );
           const randomQuiz = data[randomIndex];
           User.findById(userId)
@@ -164,7 +253,7 @@ exports.random = (req, res) => {
           .status(500)
           .send({ message: message });
       });
-      })
+    })
     .catch(err => {
       let message = `/user ${err} Some error occurred while retrieving Users with id ${userId}`;
       logger.error(message);
