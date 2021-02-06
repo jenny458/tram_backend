@@ -667,23 +667,28 @@ exports.quizCheckAnswer = (req, res) => {
               if(quiz.answer == userChoice){
                 Setting.find({})
                 .then(data => {
-                  let now = new Date()
-                  logger.info(`server time ${now.getHours()} ${now.getMinutes()}`)
                   let nz_date_string = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
                   let currentDate = new Date(nz_date_string);
+                  logger.info(`currentDate : ${currentDate}`)
                   
                   startDate = new Date(currentDate.getTime());
                   startDate.setHours(data[0].bonus_time_start_hour);
                   startDate.setMinutes(data[0].bonus_time_start_minute);
                   startDate.setSeconds(0);
 
+                  logger.info(`startDate : ${startDate}`)
+
                   endDate = new Date(currentDate.getTime());
                   endDate.setHours(data[0].bonus_time_end_hour);
                   endDate.setMinutes(data[0].bonus_time_end_minute);
                   endDate.setSeconds(0);
 
-                  valid = startDate < currentDate && endDate > currentDate
-                  if(valid){
+                  logger.info(`endDate : ${endDate}`)
+
+                  validBonusTime = startDate < currentDate && endDate > currentDate
+
+                  logger.info(`valid : ${validBonusTime}`)
+                  if(validBonusTime){
                     logger.info(`user on bonus time point x ${data[0].bonus} point`);
                     user.point = user.point+(quiz.point * data[0].bonus);
                     console.log(quiz.point * data[0].bonus)
