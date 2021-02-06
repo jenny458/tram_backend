@@ -57,11 +57,42 @@ exports.create = (req, res) => {
         });
     }else{
       const activity = new UserActivities({activity: "LOGIN", user_id:data[0].id}).save();
-      res.send(data[0]);
+      const minuteAfterLeft = Math.round( ((new Date().getTime() - data[0].latestLifeTimestamp.getTime()) / 60000 ) )
+      const add = Math.round(minuteAfterLeft / 20)
+      logger.info(`user has ${data[0].life}`)
+      logger.info(`it's been ${minuteAfterLeft} minutes after logout, added ${add} life to user`)
+      if( add > 0){
+        data[0].life = data[0].life + add
+        if(data[0].life > 50){
+          data[0].life = 50
+        }
+        data[0].addLife = false
+        data[0].latestLifeTimestamp = new Date()
+      }
+
+      User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
+      .then(data => {
+        if (!data) {
+          let message = `user/quiz Cannot update point to user with id=${id}. Maybe user was not found!`;
+          logger.error(message);
+          res.status(404).send({
+            message: message
+          });
+        } else {
+          res.send(data);
+        }
+      })
+      .catch(err => {
+        let message = `user/quiz ${err} with id=${data[0].id}`
+        logger.error(message);
+        res.status(500).send({
+          message: message
+        });
+      });
     }
   })
   .catch(err => {
-    let message = `/user ${err} Some error occurred while retrieving Users with id ${id}`;
+    let message = `/user ${err} Some error occurred while retrieving Users`;
     logger.error(message);
     res.status(500).send({
       message: message
@@ -636,19 +667,30 @@ exports.quizCheckAnswer = (req, res) => {
               if(quiz.answer == userChoice){
                 Setting.find({})
                 .then(data => {
+                  let now = new Date()
+                  logger.info(`server time ${now.getHours()} ${now.getMinutes()}`)
                   let nz_date_string = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
-                  let date_ob = new Date(nz_date_string);
-                  let hour = date_ob.getHours();
-                  let minute = date_ob.getMinutes();
-                  if( (data[0].bonus_time_start_hour >= hour && data[0].bonus_time_end_hour <= hour) &&
-                      (data[0].bonus_time_start_minute <= minute && data[0].bonus_time_end_minute >= minute)
-                  ){
+                  let currentDate = new Date(nz_date_string);
+                  
+                  startDate = new Date(currentDate.getTime());
+                  startDate.setHours(data[0].bonus_time_start_hour);
+                  startDate.setMinutes(data[0].bonus_time_start_minute);
+                  startDate.setSeconds(0);
+
+                  endDate = new Date(currentDate.getTime());
+                  endDate.setHours(data[0].bonus_time_end_hour);
+                  endDate.setMinutes(data[0].bonus_time_end_minute);
+                  endDate.setSeconds(0);
+
+                  valid = startDate < currentDate && endDate > currentDate
+                  if(valid){
+                    logger.info(`user on bonus time point x ${data[0].bonus} point`);
                     user.point = user.point+(quiz.point * data[0].bonus);
                     console.log(quiz.point * data[0].bonus)
-                    logger.info("user answer is correct! add {} point", quiz.point * data[0].bonus);
+                    logger.info(`user answer is correct! add ${quiz.point * data[0].bonus} point`);
                   }else{
+                    logger.info(`user not on bonus`);
                     user.point = user.point+quiz.point;
-                    console.log(quiz.point * data[0].bonus)
                     logger.info("user answer is correct! add 1 point");
                   }
 
