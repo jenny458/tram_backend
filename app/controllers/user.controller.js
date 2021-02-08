@@ -57,8 +57,8 @@ exports.create = (req, res) => {
         });
     }else{
       const activity = new UserActivities({activity: "LOGIN", user_id:data[0].id}).save();
-      const minuteAfterLeft = Math.round( ((new Date().getTime() - data[0].latestLifeTimestamp.getTime()) / 60000 ) )
-      const add = Math.round(minuteAfterLeft / 20)
+      const minuteAfterLeft = Math.floor( ((new Date().getTime() - data[0].latestLifeTimestamp.getTime()) / 60000 ) )
+      const add = Math.floor(minuteAfterLeft / 20)
       logger.info(`user has ${data[0].life}`)
       logger.info(`it's been ${minuteAfterLeft} minutes after logout, added ${add} life to user`)
       if( add > 0){
