@@ -593,6 +593,7 @@ exports.addLifeToUserByPay = (req, res) => {
     }
   },
   error => {
+    const activity = new UserActivities({activity: "EVENT_PASS_RETURN_ERROR", user_id:data.id}).save();
     res.status(500).send({message: "eventpass return error", "error": error.error});
   });
 };
