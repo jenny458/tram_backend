@@ -524,7 +524,7 @@ exports.addLifeToUserByPay = (req, res) => {
   const user_account_id = req.body.account_id;
   const ref_no = req.body.ref_no;
   const result = req.body.result;
-  if (!user_account_id || !ref_no || !result) {
+  if (!user_account_id || !ref_no ) {
     let message = `is missing infomation like account_id, ref_no, result`;
     logger.error(message);
     res.status(400).send(message);
