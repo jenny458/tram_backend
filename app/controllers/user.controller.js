@@ -1,5 +1,6 @@
 const db = require("../models");
 const logger = require("../config/log.config.js");
+const request = require('request-promise-native');
 const User = db.user;
 const Quiz = db.quiz;
 const Setting = db.setting;
@@ -507,6 +508,84 @@ exports.updateUserLife = (req, res) => {
         .status(500)
         .send({ message: message});
     });
+};
+
+
+exports.addLifeToUserByPay = (req, res) => {
+  if (!req.body) {
+    let message = "Data to update can not be empty!";
+    logger.error(message);
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+  // account id, ref no, result
+  const user_account_id = req.body.account_id;
+  const ref_no = req.body.ref_no;
+  const result = req.body.result;
+  if (!user_account_id || !ref_no || !result) {
+    let message = `is missing infomation like account_id, ref_no, result`;
+    logger.error(message);
+    res.status(400).send(message);
+    return;
+  }
+
+
+  const options = {
+    method: 'GET',
+    uri: `https://xcommerce-api.eventpassdev.com/gbpay/checkStatusPay/${ref_no}`
+  }
+
+  request(options).then(
+  response => {
+    User.find({account_id: user_account_id})
+    .then(data => {
+      if (!data && data.length > 1){
+        let message = `Maybe user was not found with id ${user_account_id}`;
+        logger.error(message);
+        res.status(404).send(message);
+      }else{
+        data[0].life = data[0].life+50;
+        data[0].addLife = false;
+        if(data[0].life > 50){
+          data[0].life = 50;
+        }
+        
+        User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/addLife Cannot update life to user with id=${data.id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            let message = `user/addLife user ${data.id} added 50 life`;
+            logger.info(message);
+            res.send({message : "successfully added 50 hearts to user"});
+          }
+        })
+        .catch(err => {
+          let message = `user/addLife ${err} with id=${data[0].id}`
+          logger.error(message);
+          res.status(500).send({
+            message: message
+          });
+        });
+      }
+    })
+    .catch(err => {
+      let message = `${err} Error retrieving User with user_account_id ${user_account_id}`;
+      logger.error(message);
+      res
+        .status(500)
+        .send({ message: message});
+    });
+  },
+  error => {
+    res.status(500).send({message: "eventpass return error", "error": error.error});
+  });
 };
 
 exports.updateStatusOnline = (req, res) => {

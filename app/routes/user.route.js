@@ -35,6 +35,8 @@ module.exports = app => {
 
     router.post("/selfRank", user.selfRank);
 
+    router.post("/addLife", user.addLifeToUserByPay)
+
     app.use("/api/user", router);
   };
   
