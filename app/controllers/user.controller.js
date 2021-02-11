@@ -534,54 +534,63 @@ exports.addLifeToUserByPay = (req, res) => {
 
   const options = {
     method: 'GET',
-    uri: `https://xcommerce-api.eventpassdev.com/gbpay/checkStatusPay/${ref_no}`
+    uri: `https://api.eventpass.shop/gbpay/checkStatusPay/${ref_no}`
   }
 
   request(options).then(
   response => {
-    User.find({account_id: user_account_id})
-    .then(data => {
-      if (!data && data.length > 1){
-        let message = `Maybe user was not found with id ${user_account_id}`;
-        logger.error(message);
-        res.status(404).send(message);
-      }else{
-        data[0].life = data[0].life+50;
-        data[0].addLife = false;
-        if(data[0].life > 50){
-          data[0].life = 50;
-        }
-        
-        User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
-        .then(data => {
-          if (!data) {
-            let message = `user/addLife Cannot update life to user with id=${data.id}. Maybe user was not found!`;
+    const resObj = JSON.parse(response);
+    if(resObj && resObj.data && resObj.data.pay_status && resObj.data.message == "Complete"){
+      User.find({account_id: user_account_id})
+      .then(data => {
+        if (!data && data.length > 1){
+          let message = `Maybe user was not found with id ${user_account_id}`;
+          logger.error(message);
+          res.status(404).send(message);
+        }else{
+          data[0].life = data[0].life+50;
+          data[0].addLife = false;
+          if(data[0].life > 50){
+            data[0].life = 50;
+          }
+          
+          User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
+          .then(data => {
+            if (!data) {
+              let message = `user/addLife Cannot update life to user with id=${data.id}. Maybe user was not found!`;
+              logger.error(message);
+              res.status(404).send({
+                message: message
+              });
+            } else {
+              let message = `user/addLife user ${data.id} added 50 life`;
+              logger.info(message);
+              res.send({message : "successfully added 50 hearts to user"});
+            }
+          })
+          .catch(err => {
+            let message = `user/addLife ${err} with id=${data[0].id}`
             logger.error(message);
-            res.status(404).send({
+            res.status(500).send({
               message: message
             });
-          } else {
-            let message = `user/addLife user ${data.id} added 50 life`;
-            logger.info(message);
-            res.send({message : "successfully added 50 hearts to user"});
-          }
-        })
-        .catch(err => {
-          let message = `user/addLife ${err} with id=${data[0].id}`
-          logger.error(message);
-          res.status(500).send({
-            message: message
           });
-        });
-      }
-    })
-    .catch(err => {
-      let message = `${err} Error retrieving User with user_account_id ${user_account_id}`;
+        }
+      })
+      .catch(err => {
+        let message = `${err} Error retrieving User with user_account_id ${user_account_id}`;
+        logger.error(message);
+        res
+          .status(500)
+          .send({ message: message});
+      });
+    }else{
+      let message = `Error retrieving data from ${options.uri}`;
       logger.error(message);
       res
         .status(500)
         .send({ message: message});
-    });
+    }
   },
   error => {
     res.status(500).send({message: "eventpass return error", "error": error.error});
