@@ -58,38 +58,43 @@ exports.create = (req, res) => {
         });
     }else{
       const activity = new UserActivities({activity: "LOGIN", user_id:data[0].id}).save();
-      const minuteAfterLeft = Math.floor( ((new Date().getTime() - data[0].latestLifeTimestamp.getTime()) / 60000 ) )
-      const add = Math.floor(minuteAfterLeft / 20)
-      logger.info(`user has ${data[0].life}`)
-      logger.info(`it's been ${minuteAfterLeft} minutes after logout, added ${add} life to user`)
-      if( add > 0){
-        data[0].life = data[0].life + add
-        if(data[0].life > 50){
-          data[0].life = 50
-        }
-        data[0].addLife = false
-        data[0].latestLifeTimestamp = new Date()
-      }
 
-      User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
-      .then(data => {
-        if (!data) {
-          let message = `user/quiz Cannot update point to user with id=${id}. Maybe user was not found!`;
+      if(data[0].latestLifeTimestamp){
+        const minuteAfterLeft = Math.floor( ((new Date().getTime() - data[0].latestLifeTimestamp.getTime()) / 60000 ) )
+        const add = Math.floor(minuteAfterLeft / 20)
+        logger.info(`user has ${data[0].life}`)
+        logger.info(`it's been ${minuteAfterLeft} minutes after logout, added ${add} life to user`)
+        if( add > 0){
+          data[0].life = data[0].life + add
+          if(data[0].life > 50){
+            data[0].life = 50
+          }
+          data[0].addLife = false
+          data[0].latestLifeTimestamp = new Date()
+        }
+  
+        User.findByIdAndUpdate(data[0].id, data[0], { useFindAndModify: false, new: true })
+        .then(data => {
+          if (!data) {
+            let message = `user/quiz Cannot update point to user with id=${id}. Maybe user was not found!`;
+            logger.error(message);
+            res.status(404).send({
+              message: message
+            });
+          } else {
+            res.send(data);
+          }
+        })
+        .catch(err => {
+          let message = `user/quiz ${err} with id=${data[0].id}`
           logger.error(message);
-          res.status(404).send({
+          res.status(500).send({
             message: message
           });
-        } else {
-          res.send(data);
-        }
-      })
-      .catch(err => {
-        let message = `user/quiz ${err} with id=${data[0].id}`
-        logger.error(message);
-        res.status(500).send({
-          message: message
         });
-      });
+      }else{
+        res.send(data[0]);
+      }
     }
   })
   .catch(err => {
