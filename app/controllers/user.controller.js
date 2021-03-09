@@ -753,9 +753,32 @@ exports.quizCheckAnswer = (req, res) => {
             let current = new Date().getTime();
             let seconds = (current - user.userQuizTimestamp.getTime()) / 1000;
             if(seconds > quiz.timer){
-              let message = `quizCheckAnswer user take too long to answer`;
+              let message = `quizCheckAnswer user took too long time to answer`;
               logger.info(message);
-              res.send({result: "time's up"});
+              user.life = user.life-1;
+              user.latestLifeTimestamp = new Date();
+              user.addLife = true;
+              User.findByIdAndUpdate(userId, user, { useFindAndModify: false, new: true })
+              .then(data => {
+                if (!data) {
+                  let message = `quizCheckAnswer Cannot updateuser with id=${userId}. Maybe user was not found!`;
+                  logger.error(message);
+                  res.status(404).send({
+                    message: message
+                  });
+                } else {
+                  let message = `quizCheckAnswer user ${userId} updated successfully`;
+                  logger.info(message);
+                  res.send({result: "false", detail: "time's up", point:data.point, life: data.life});
+                }
+              })
+              .catch(err => {
+                let message = `user/quizCheckAnswer ${err} with id=${userId}`
+                logger.error(message);
+                res.status(500).send({
+                  message: message
+                });
+              });
             }else{
               const userChoice = req.body.userChoice;
               if(quiz.answer == userChoice){
